@@ -6,6 +6,15 @@
 
 import sys
 import argparse
+import string
+import re
+
+
+def analyzer(inputfile):
+    review=inputfile.read()
+    tokens=[e.lower() for e in map(string.strip, re.split("(\W+)", review)) if len(e) > 0 and not re.match("\W",e)]
+
+    print tokens
 
 
 def main(arguments):
@@ -14,13 +23,22 @@ def main(arguments):
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
 
     parser.add_argument('file', type=argparse.FileType('r'), nargs='+')
+
+    # args = parser.parse_args(arguments)
+    # print args
+
+    # get args
     args = parser.parse_args()
     for f in args.file:
-        for line in f:
-            print line
-    args = parser.parse_args(arguments)
-
-    print args
+        # print f
+        analyzer(f)
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))
+
+
+# File analyzer
+
+
+
+
