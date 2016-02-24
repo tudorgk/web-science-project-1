@@ -8,7 +8,7 @@ import sys
 import argparse
 import string
 import re
-
+import operator
 
 
 def tokenize_file(input_file):
@@ -18,7 +18,9 @@ def tokenize_file(input_file):
               map(string.strip, re.compile("(\s)").split(review))
               if len(e) > 0 and not re.match("\s",e)]
 
-    return tokens
+    tokens = [re.split(r'[-()\n ,:.]', x) for x in tokens]
+    flattened = [val for sublist in tokens for val in sublist]
+    return flattened
 
 
 def sanitize_stopwords(input_file):
@@ -32,8 +34,15 @@ def sanitize_stopwords(input_file):
 
 
 def remove_stop_words(tokenized_strings, stop_words):
-    print stop_words
+    sanitized_list = [x for x in tokenized_strings if x not in stop_words]
 
+    #remove empty chars
+    sanitized_list = filter(None, sanitized_list)
+
+    #remove numbers
+    sanitized_list = [x for x in sanitized_list if not any(c.isdigit() for c in x)]
+
+    return sanitized_list
 
 def main(arguments):
 
@@ -44,19 +53,22 @@ def main(arguments):
     parser.add_argument('-d', action='store', type=argparse.FileType('r'), nargs=1, help='stop words file')
 
     args = parser.parse_args(arguments)
-    # print args
 
     # get stop words file
     stop_words_file = args.d
     stop_words_list = sanitize_stopwords(stop_words_file[0])
-    print stop_words_list
 
+    sanitiezed_file_list = []
     # get files
     for f in args.file:
-        # print f
         tokenized_words = tokenize_file(f)
-        print tokenized_words
+        sanitiezed_words = remove_stop_words(tokenized_words,stop_words_list)
+        sanitiezed_file_list.append(sanitiezed_words)
 
+    # now we have the sanitized words for each file
+    print sanitiezed_file_list
+
+    
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))
