@@ -4,12 +4,12 @@
 
 """
 
-import sys
 import argparse
 import string
 import re
-import operator
-
+import sys
+import urllib as ul
+from TrendsScraper import TrendsScraper
 
 def tokenize_file(input_file):
     review = input_file.read()
@@ -66,9 +66,26 @@ def main(arguments):
         sanitiezed_file_list.append(sanitiezed_words)
 
     # now we have the sanitized words for each file
-    print sanitiezed_file_list
+    #print sanitiezed_file_list
 
-    
+    query_words = []
+
+    # find the words that appear in both
+    for i in range(0,len(sanitiezed_file_list)):
+        for j in range(0,len(sanitiezed_file_list)):
+            if i != j:
+                for k in range(0,len(sanitiezed_file_list[i])):
+                    if sanitiezed_file_list[i][k] in sanitiezed_file_list[j]:
+                        query_words.append(sanitiezed_file_list[i][k])
+
+    query_words = list(set(query_words))
+
+    query_words =map(lambda x:ul.quote(x),query_words)
+    print query_words
+
+    scraper = TrendsScraper(query_words)
+    scraper.scrapeGoogleTrends()
+
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))
