@@ -9,6 +9,7 @@ import string
 import re
 import sys
 import urllib as ul
+import os
 from TrendsScraper import TrendsScraper
 
 def tokenize_file(input_file):
@@ -83,7 +84,9 @@ def main(arguments):
     query_words =map(lambda x:ul.quote(x),query_words)
     print query_words
 
-    scraper = TrendsScraper(query_words)
+    file_name = args.file[0].name.rsplit('/',1)[-1]
+
+    scraper = TrendsScraper(query_words,file_name)
     scraper.scrapeGoogleTrends()
 
 
