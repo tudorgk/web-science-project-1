@@ -1,6 +1,7 @@
 import numpy as np
 from sklearn import preprocessing
 from sklearn import cross_validation
+from sklearn.cross_validation import KFold
 from sklearn import linear_model
 import csv
 import sys
@@ -49,7 +50,15 @@ class CSVAnalyser:
 
         self.data = np.array(self.search_data)
         self.normalized_data = preprocessing.normalize(self.data)
-        #print self.normalized_data
+        print self.data
+
+        #5-fold validation
+        kf = KFold(len(self.data), n_folds=5)
+        for train_index, test_index in kf:
+            print("TRAIN:", train_index, "TEST:", test_index)
+            X_train, X_test = self.data[train_index], self.data[test_index]
+            print("X_TRAIN:", X_train, "X_TEST:", X_test)
+
 
         clf = linear_model.LinearRegression()
 
