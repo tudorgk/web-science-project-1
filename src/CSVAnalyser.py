@@ -1,4 +1,7 @@
-import numpy
+import numpy as np
+from sklearn import preprocessing
+from sklearn import cross_validation
+from sklearn import linear_model
 import csv
 import sys
 import glob
@@ -8,6 +11,10 @@ from os import listdir
 class CSVAnalyser:
     def __init__(self, directories = []):
         self.directories = directories
+        self.search_data = []
+        self.data = None
+        self.normalized_data = None
+
 
     def find_csv_filenames(self,path_to_dir, suffix=".csv" ):
         filenames = listdir(path_to_dir)
@@ -15,24 +22,19 @@ class CSVAnalyser:
 
     def open_csv_file (self,path_to_file):
         csv_file = open(path_to_file, 'r')
+        #skip header
         return csv_file
 
     def analyse_file(self,file_handler):
         try:
             reader = csv.reader(file_handler)
-            valid = False
-            for row in reader:
-                #print row
-                if len(row) != 0:
-                    if row[0] == "Week":
-                        valid = True
-                    elif row[0] == "Month":
-                        valid = True
-            if not valid:
-                print "file: " + file_handler.name +" is NOT valid. Skipping file"
-            else:
-                None
+            next(reader, None)  # skip the headers
 
+            value_list = []
+
+            for row in reader:
+                value_list.append(float(row[1]))
+            self.search_data.append(value_list)
 
         finally:
             file_handler.close()
@@ -43,6 +45,13 @@ class CSVAnalyser:
                 for csv_file in csv_files_in_directory:
                     file_handler = self.open_csv_file(directory + "/" + csv_file)
                     self.analyse_file(file_handler)
+
+
+        self.data = np.array(self.search_data)
+        self.normalized_data = preprocessing.normalize(self.data)
+        #print self.normalized_data
+
+        clf = linear_model.LinearRegression()
 
 
 def main(arguments):
