@@ -27,8 +27,8 @@ class TrendsScraper:
         for query_word in self.search_words:
 
             urlString = self.baseURL + query_word + self.tailURL
-            print urlString
+            print (urlString)
 
             self.driver.get(urlString)
-            print "Downloading: " + query_word + ".csv file"
+            print ("Downloading: " + query_word + ".csv file")
 

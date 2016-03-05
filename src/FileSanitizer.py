@@ -82,7 +82,7 @@ def main(arguments):
     query_words = list(set(query_words))
 
     query_words =map(lambda x:ul.quote(x),query_words)
-    print query_words
+    print (query_words)
 
     file_name = args.file[0].name.rsplit('/',1)[-1]
 

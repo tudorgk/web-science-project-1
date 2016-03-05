@@ -1,5 +1,6 @@
 import numpy as np
 from sklearn import preprocessing
+import matplotlib.pyplot as plt
 from sklearn import cross_validation
 from sklearn.cross_validation import KFold
 from sklearn import linear_model
@@ -35,19 +36,35 @@ class CSVAnalyser:
 
     def open_csv_file (self,path_to_file):
         csv_file = open(path_to_file, 'r')
-        #skip header
         return csv_file
 
     def analyse_file(self,file_handler):
         try:
             reader = csv.reader(file_handler)
-            next(reader, None)  # skip the headers
+            header = next(reader)  # check the headers
+            #print header
 
-            value_list = []
-
-            for row in reader:
-                value_list.append(float(row[1]))
-            self.search_data.append(value_list)
+            if header[0] == 'Month':
+                value_list = []
+                for row in reader:
+                    value_list.append(float(row[1]))
+                self.search_data.append(value_list)
+            elif header[0] == 'Week':
+                value_list = []
+                aux_week_array = []
+                aux_month = ""
+                for row in reader:
+                    if aux_month == "":
+                        aux_month = row[0][:7]
+                    if row[0][:7] == aux_month:
+                        aux_week_array.append(float(row[1]))
+                    else:
+                        average_week_count = np.average(aux_week_array)
+                        value_list.append(average_week_count)
+                        del aux_week_array[:]
+                        aux_week_array.append(float(row[1]))
+                        aux_month = row[0][:7]
+                self.search_data.append(value_list)
 
         finally:
             file_handler.close()
@@ -60,38 +77,49 @@ class CSVAnalyser:
                     self.analyse_file(file_handler)
 
 
-        self.data = np.array(self.search_data)
-        self.data = self.data.transpose()
+        #need to pad the matrix with missing values
+        length = len(sorted(self.search_data,key=len, reverse=True)[0])
+        self.data=np.array([xi+[0]*(length-len(xi)) for xi in self.search_data])
+
+        self.data = np.transpose(self.data)
+
 
         #get only the values until 12-2015 (to match the clinical data)
-        #print ("BIG data = " , self.data.shape)
-        self.data = self.data[:len(self.clinical_data),:]
+        self.data = self.data[:self.clinical_data.size,:]
         #print ("SMALL data = " , self.data.shape)
-        #print ("Clinical data = ", self.clinical_data.shape)
+        #print ("Clinical data = ", self.clinical_data.size)
 
         self.normalized_data = preprocessing.normalize(self.data)
         #print self.data
 
         regr = linear_model.LinearRegression()
 
+        coeficients_array = []
+        rmse_array = []
+        variance_array = []
+
         #5-fold validation
-        kf = KFold(len(self.data), n_folds=5,shuffle=False)
+        kf = KFold(len(self.data), n_folds=5,shuffle=True)
         for train_index, test_index in kf:
-            #print("TRAIN:", train_index, "TEST:", test_index)
             X_train, X_test = self.data[train_index], self.data[test_index]
             Y_train, Y_test = self.clinical_data[train_index], self.clinical_data[test_index]
             regr.fit(X_train, Y_train)
-            #print("X_TRAIN:", X_train, "X_TEST:", X_test)
 
-            # The coefficients
-            print('Coefficients: \n', regr.coef_)
-            # The mean square error
-            #print("Residual sum of squares: %.2f" % np.mean((regr.predict(X_test) - Y_test) ** 2))
-            print("Residual sum of squares: %.2f" % np.sqrt(mean_squared_error(regr.predict(X_test), Y_test)))
-            # Explained variance score: 1 is perfect prediction
-            print('Variance score: %.2f' % regr.score(X_test, Y_test))
+            #save data for averaging after 5 fold validation
+            coeficients_array.append(regr.coef_)
+            rmse_array.append(np.sqrt(mean_squared_error(regr.predict(X_test), Y_test)))
+            variance_array.append(regr.score(X_test, Y_test))
 
 
+        # The coefficients
+        print('Coefficients: \n', coeficients_array)
+        # The root mean square error
+        print("Average RMSE: \n" , np.average(rmse_array))
+        # Explained variance score: 1 is perfect prediction
+        # The best possible score is 1.0 and it can be negative (because the model can be arbitrarily worse).
+        # A constant model that always predicts the expected value of y, disregarding the input features,
+        # would get a R^2 score of 0.0.
+        print('Average Variance score: \n', np.average(variance_array))
 
 
 
