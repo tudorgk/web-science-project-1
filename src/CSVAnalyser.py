@@ -111,15 +111,13 @@ class CSVAnalyser:
             variance_array.append(regr.score(X_test, Y_test))
 
 
-        # The coefficients
-        print('Coefficients: \n', coeficients_array)
         # The root mean square error
-        print("Average RMSE: \n" , np.average(rmse_array))
+        print("%.3f" % np.average(rmse_array))
         # Explained variance score: 1 is perfect prediction
         # The best possible score is 1.0 and it can be negative (because the model can be arbitrarily worse).
         # A constant model that always predicts the expected value of y, disregarding the input features,
         # would get a R^2 score of 0.0.
-        print('Average Variance score: \n', np.average(variance_array))
+        print('%.3f' % np.average(variance_array))
 
 
 

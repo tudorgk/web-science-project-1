@@ -11,6 +11,7 @@ import sys
 import urllib as ul
 import os
 from TrendsScraper import TrendsScraper
+from PyTrendsScraper import PyTrendsScraper
 
 def tokenize_file(input_file):
     review = input_file.read()
@@ -86,7 +87,9 @@ def main(arguments):
 
     file_name = args.file[0].name.rsplit('/',1)[-1]
 
-    scraper = TrendsScraper(query_words,file_name)
+    #scraper = TrendsScraper(query_words,file_name)
+    #
+    scraper = PyTrendsScraper(query_words, file_name)
     scraper.scrapeGoogleTrends()
 
 
