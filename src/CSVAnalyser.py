@@ -133,7 +133,7 @@ def main(arguments):
     csv_analyser = CSVAnalyser(args.dir)
     csv_analyser.import_clinical_data(args.t[0])
     csv_analyser.analyse()
-    #get all the file names and save them
+
 
 
 if __name__ == '__main__':
